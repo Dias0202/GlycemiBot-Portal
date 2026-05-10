@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: glycemibot-portal
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: https://glycemibot-api.onrender.com
