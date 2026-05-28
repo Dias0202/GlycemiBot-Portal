@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Activity, Eye, EyeOff, AlertCircle } from "lucide-react";
+import Link from "next/link";
 import { api } from "@/lib/api/client";
 
 export default function LoginPage() {
@@ -101,6 +102,13 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
+
+        <p className="mt-4 text-center text-sm text-slate-500">
+          Primeiro acesso?{" "}
+          <Link href="/setup" className="font-medium text-violet-600 hover:text-violet-700">
+            Criar conta de médico
+          </Link>
+        </p>
       </div>
     </div>
   );

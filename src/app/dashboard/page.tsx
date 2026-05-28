@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Activity, LogOut, Users, TrendingUp, TrendingDown, Minus, AlertTriangle, RefreshCw } from "lucide-react";
 import { api, type PatientSummary, type PractitionerMe } from "@/lib/api/client";
 
+const PORTAL_POLL_MS = 60_000;
+
 function GlucoseBadge({ value, trend }: { value: number; trend: string }) {
   let color = "bg-emerald-50 text-emerald-700 border-emerald-200";
   if (value < 70) color = "bg-red-50 text-red-700 border-red-200";
@@ -37,7 +39,8 @@ function DiabeticTypeBadge({ type }: { type: string }) {
   );
 }
 
-function formatLastSynced(iso: string): string {
+function formatLastSynced(iso: string | null): string {
+  if (!iso) return "sem leitura";
   const d = new Date(iso);
   const now = new Date();
   const diffMin = Math.round((now.getTime() - d.getTime()) / 60000);
@@ -54,6 +57,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -64,6 +68,7 @@ export default function DashboardPage() {
       ]);
       setMe(meData);
       setPatients(patientsData);
+      setLastUpdatedAt(new Date());
       setError("");
     } catch (err) {
       if (err instanceof Error && err.message === "Unauthorized") {
@@ -77,15 +82,22 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    const initialLoad = window.setTimeout(() => void loadData(), 0);
+    const timer = window.setInterval(() => loadData(true), PORTAL_POLL_MS);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.clearInterval(timer);
+    };
+  }, [loadData]);
 
   async function handleLogout() {
     await api.auth.logout().catch(() => {});
     router.replace("/login");
   }
 
-  const hypoPatientsCount = patients.filter((p) => p.currentGlucose > 0 && p.currentGlucose < 70).length;
-  const hyperPatientsCount = patients.filter((p) => p.currentGlucose > 180).length;
+  const hypoPatientsCount = patients.filter((p) => p.currentGlucose !== null && p.currentGlucose < 70).length;
+  const hyperPatientsCount = patients.filter((p) => p.currentGlucose !== null && p.currentGlucose > 180).length;
 
   if (loading) {
     return (
@@ -136,7 +148,10 @@ export default function DashboardPage() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-slate-900">Pacientes</h1>
-              <p className="mt-0.5 text-sm text-slate-500">{patients.length} pacientes cadastrados</p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                {patients.length} pacientes cadastrados
+                {lastUpdatedAt ? ` · atualizado às ${lastUpdatedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : ""}
+              </p>
             </div>
             <button
               onClick={() => loadData(true)}
@@ -198,7 +213,7 @@ export default function DashboardPage() {
                         <DiabeticTypeBadge type={p.diabetesType} />
                       </td>
                       <td className="px-5 py-4">
-                        {p.currentGlucose > 0 ? (
+                        {p.currentGlucose !== null ? (
                           <GlucoseBadge value={p.currentGlucose} trend={p.glucoseTrend} />
                         ) : (
                           <span className="text-xs text-slate-400">Sem dados</span>
