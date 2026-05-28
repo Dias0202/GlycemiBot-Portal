@@ -16,6 +16,7 @@ async function apiFetch<T>(path: string, init?: RequestInit, allowRetry = true):
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     credentials: "include",
+    cache: "no-store",
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       "X-Requested-With": "fetch",
@@ -35,8 +36,8 @@ async function apiFetch<T>(path: string, init?: RequestInit, allowRetry = true):
         // refresh failed
       }
     }
-    if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-      window.location.href = "/login";
+    if (typeof window !== "undefined" && !window.location.pathname.endsWith("/login")) {
+      window.location.href = "/portal/login";
     }
     throw new Error("Unauthorized");
   }
@@ -63,9 +64,24 @@ export interface PatientSummary {
   name: string;
   age: number;
   diabetesType: string;
-  currentGlucose: number;
+  currentGlucose: number | null;
   glucoseTrend: string;
-  lastSyncedAt: string;
+  lastSyncedAt: string | null;
+}
+
+export interface PortalSetupPayload {
+  email: string;
+  password: string;
+  name: string;
+  license_number?: string;
+  specialty?: string;
+}
+
+export interface PortalSetupResponse {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
 }
 
 export const api = {
@@ -78,5 +94,11 @@ export const api = {
   portal: {
     me: () => apiFetch<PractitionerMe>("/api/v1/portal/me"),
     patients: () => apiFetch<PatientSummary[]>("/api/v1/portal/patients"),
+    setup: (data: PortalSetupPayload, setupKey: string) =>
+      apiFetch<PortalSetupResponse>("/api/v1/portal/setup", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "X-Setup-Key": setupKey },
+      }),
   },
 };
