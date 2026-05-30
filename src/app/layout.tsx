@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GlycemiBot Portal Clínico",
+  title: "GlycomiBot Portal Clínico",
   description: "Painel de monitoramento de pacientes para médicos e clínicas.",
 };
 

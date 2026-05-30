@@ -117,7 +117,7 @@ export default function DashboardPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600">
               <Activity size={16} className="text-white" strokeWidth={2} />
             </div>
-            <span className="text-sm font-semibold text-slate-900">GlycemiBot</span>
+            <span className="text-sm font-semibold text-slate-900">GlycomiBot</span>
           </div>
 
           <nav className="flex-1 p-3">

@@ -38,7 +38,7 @@ export default function LoginPage() {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600">
             <Activity size={18} className="text-white" strokeWidth={2} />
           </div>
-          <span className="text-xl font-semibold text-slate-900">GlycemiBot</span>
+          <span className="text-xl font-semibold text-slate-900">GlycomiBot</span>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
