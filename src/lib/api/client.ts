@@ -37,7 +37,7 @@ async function apiFetch<T>(path: string, init?: RequestInit, allowRetry = true):
       }
     }
     if (typeof window !== "undefined" && !window.location.pathname.endsWith("/login")) {
-      window.location.href = "/portal/login";
+      window.location.href = "/login";
     }
     throw new Error("Unauthorized");
   }
